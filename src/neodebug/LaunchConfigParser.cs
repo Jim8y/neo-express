@@ -103,15 +103,18 @@ namespace NeoDebug.Neo3
 
         private static IReadOnlyList<CastOperation> ParseReturnTypes(IReadOnlyDictionary<string, JToken> config)
         {
-            if (config.TryGetValue("return-types", out var json))
+            // DAP launch properties conventionally use camelCase. Keep the original kebab-case
+            // spelling as a compatibility alias for existing launch.json files.
+            if (!config.TryGetValue("returnTypes", out var json) || json is null)
             {
-                var builder = ImmutableList.CreateBuilder<CastOperation>();
-                foreach (var returnType in json)
-                    builder.Add(DebugSession.CastOperations[returnType.Value<string>() ?? ""]);
-                return builder.ToImmutable();
+                if (!config.TryGetValue("return-types", out json) || json is null)
+                    return ImmutableList<CastOperation>.Empty;
             }
 
-            return ImmutableList<CastOperation>.Empty;
+            var builder = ImmutableList.CreateBuilder<CastOperation>();
+            foreach (var returnType in json)
+                builder.Add(DebugSession.CastOperations[returnType.Value<string>() ?? ""]);
+            return builder.ToImmutable();
         }
     }
 }
