@@ -70,7 +70,7 @@ request whose configuration carries these properties:
 | --- | --- | --- |
 | `program` | yes | Path to the compiled `.nef`. Its sibling `.nefdbgnfo`/`.debug.json` is loaded automatically for source mapping. |
 | `invocation.trace-file` | yes | Path to the `.neo-trace` recording to replay. |
-| `return-types` | no | Array of cast hints (`int`, `bool`, `string`, `hex`, `byte[]`, `addr`) for rendering the method's return values. |
+| `returnTypes` | no | Array of cast hints (`int`, `bool`, `string`, `hex`, `byte[]`, `addr`) for rendering the method's return values. The legacy `return-types` spelling is also accepted. |
 | `sourceFileMap` | no | Object remapping the document paths baked into the debug info to their location on this machine. |
 
 A VS Code `launch.json` entry looks like:
@@ -87,7 +87,7 @@ A VS Code `launch.json` entry looks like:
       "invocation": {
         "trace-file": "${workspaceFolder}/traces/0xabc...neo-trace"
       },
-      "return-types": [ "int" ]
+      "returnTypes": [ "int" ]
     }
   ]
 }
