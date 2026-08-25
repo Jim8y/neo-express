@@ -78,13 +78,13 @@ namespace test.neodebug
             return path;
         }
 
-        static LaunchArguments LaunchArgs(string program, JToken invocation, JToken? returnTypes = null)
+        static LaunchArguments LaunchArgs(string program, JToken invocation, JToken? returnTypes = null, string returnTypesKey = "returnTypes")
         {
             var args = new LaunchArguments();
             args.ConfigurationProperties["program"] = program;
             args.ConfigurationProperties["invocation"] = invocation;
             if (returnTypes is not null)
-                args.ConfigurationProperties["return-types"] = returnTypes;
+                args.ConfigurationProperties[returnTypesKey] = returnTypes;
             return args;
         }
 
@@ -101,6 +101,20 @@ namespace test.neodebug
             Assert.NotNull(session);
             Assert.Single(session.GetThreads());
             (session as IDisposable)?.Dispose();
+        }
+
+        [Fact]
+        public async Task accepts_legacy_kebab_case_return_types()
+        {
+            var args = LaunchArgs(
+                WriteNefFile(),
+                new JObject { ["trace-file"] = WriteTraceFile() },
+                new JArray("int"),
+                "return-types");
+
+            using var session = await LaunchConfigParser.CreateDebugSessionAsync(args, _ => { }, DebugView.Source);
+
+            Assert.NotNull(session);
         }
 
         [Fact]
