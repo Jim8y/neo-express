@@ -65,7 +65,7 @@ namespace test.neodebug
             args.ConfigurationProperties["program"] = program;
             args.ConfigurationProperties["invocation"] = invocation;
             if (returnTypes is not null)
-                args.ConfigurationProperties["return-types"] = returnTypes;
+                args.ConfigurationProperties["returnTypes"] = returnTypes;
             return args;
         }
 
