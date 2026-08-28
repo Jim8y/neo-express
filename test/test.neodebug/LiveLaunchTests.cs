@@ -13,6 +13,7 @@ using Neo;
 using Neo.Extensions;
 using Neo.IO;
 using Neo.SmartContract;
+using Neo.SmartContract.Manifest;
 using Neo.SmartContract.Native;
 using Neo.VM;
 using Neo.Wallets;
@@ -44,7 +45,7 @@ namespace test.neodebug
             ""extra"": null
         }";
 
-        static string WriteContractFiles(byte[]? script = null, JObject? manifest = null, string returnType = "Integer")
+        static string WriteContractFiles(byte[]? script = null, JObject? manifest = null, ContractParameterType returnType = ContractParameterType.Integer)
         {
             var basePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
 
@@ -58,7 +59,12 @@ namespace test.neodebug
             nef.CheckSum = NefFile.ComputeChecksum(nef);
 
             File.WriteAllBytes(basePath + ".nef", nef.ToArray());
-            File.WriteAllText(basePath + ".manifest.json", manifest?.ToString() ?? ManifestJson.Replace("\"Integer\"", $"\"{returnType}\""));
+            if (manifest is null)
+            {
+                manifest = JObject.Parse(ManifestJson);
+                manifest["abi"]!["methods"]![0]!["returntype"] = returnType.ToString();
+            }
+            File.WriteAllText(basePath + ".manifest.json", manifest.ToString());
             return basePath + ".nef";
         }
 
@@ -75,7 +81,7 @@ namespace test.neodebug
         static async Task<List<OutputEvent>> RunSignedContract(byte[] script, UInt160 signer)
         {
             var events = new List<DebugEvent>();
-            var args = LaunchArgs(WriteContractFiles(script, returnType: "Boolean"), new JObject { ["operation"] = "main" });
+            var args = LaunchArgs(WriteContractFiles(script, returnType: ContractParameterType.Boolean), new JObject { ["operation"] = "main" });
             args.ConfigurationProperties["signers"] = new JArray(signer.ToAddress(ProtocolSettings.Default.AddressVersion));
 
             var session = await LaunchConfigParser.CreateDebugSessionAsync(args, events.Add, DebugView.Source);
